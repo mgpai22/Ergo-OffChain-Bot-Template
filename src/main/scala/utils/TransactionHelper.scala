@@ -1,24 +1,15 @@
 package utils
 
-import org.ergoplatform.appkit.impl.ErgoTreeContract
 import org.ergoplatform.appkit.{
   Address,
   BlockchainContext,
-  ErgoContract,
-  ErgoToken,
   InputBox,
   Mnemonic,
   OutBox,
-  Parameters,
-  SecretString,
   SignedTransaction,
   UnsignedTransaction
 }
-
-import scala.math._
-import java.util
-import scala.collection.JavaConverters
-import scala.collection.mutable.ListBuffer
+import org.ergoplatform.sdk.{ErgoToken, SecretString}
 
 class TransactionHelper(
     ctx: BlockchainContext,
@@ -39,122 +30,69 @@ class TransactionHelper(
     false
   )
 
+  private val minAmount = 1000000L
+
   def buildUnsignedTransaction(
-      inputBox: util.List[InputBox],
-      outBox: List[OutBox],
-      fee: Double = 0.001
+      inputBox: Seq[InputBox],
+      outBox: Seq[OutBox],
+      fee: Long = minAmount
   ): UnsignedTransaction = {
     this.ctx
       .newTxBuilder()
-      .boxesToSpend(inputBox)
-      .outputs(outBox.toArray: _*)
-      .fee(this.getAmount(fee))
-      .sendChangeTo(this.senderAddress.asP2PK())
+      .addInputs(inputBox: _*)
+      .addOutputs(outBox: _*)
+      .fee(fee)
+      .sendChangeTo(this.senderAddress)
       .build()
   }
 
   def buildUnsignedTransactionWithDataInputs(
-      inputBox: util.List[InputBox],
-      outBox: List[OutBox],
-      dataInputs: util.List[InputBox],
-      fee: Double = 0.001
+      inputBox: Seq[InputBox],
+      outBox: Seq[OutBox],
+      dataInputs: Seq[InputBox],
+      fee: Long = minAmount
   ): UnsignedTransaction = {
     this.ctx
       .newTxBuilder()
-      .boxesToSpend(inputBox)
-      .outputs(outBox.toArray: _*)
-      .withDataInputs(dataInputs)
-      .fee(this.getAmount(fee))
-      .sendChangeTo(this.senderAddress.asP2PK())
+      .addInputs(inputBox: _*)
+      .addOutputs(outBox: _*)
+      .addDataInputs(dataInputs: _*)
+      .fee(fee)
+      .sendChangeTo(this.senderAddress)
       .build()
   }
 
   def buildUnsignedTransactionWithDataInputsWithTokensToBurn(
-      inputBox: util.List[InputBox],
-      outBox: List[OutBox],
-      dataInputs: util.List[InputBox],
-      tokensToBurn: List[ErgoToken],
-      fee: Double = 0.001
+      inputBox: Seq[InputBox],
+      outBox: Seq[OutBox],
+      dataInputs: Seq[InputBox],
+      tokensToBurn: Seq[ErgoToken],
+      fee: Long = minAmount
   ): UnsignedTransaction = {
     this.ctx
       .newTxBuilder()
-      .boxesToSpend(inputBox)
-      .outputs(outBox.toArray: _*)
-      .withDataInputs(dataInputs)
-      .tokensToBurn(tokensToBurn.toArray: _*)
-      .fee(this.getAmount(fee))
-      .sendChangeTo(this.senderAddress.asP2PK())
+      .addInputs(inputBox: _*)
+      .addOutputs(outBox.toArray: _*)
+      .addDataInputs(dataInputs: _*)
+      .tokensToBurn(tokensToBurn: _*)
+      .fee(fee)
+      .sendChangeTo(this.senderAddress)
       .build()
   }
 
   def buildUnsignedTransactionWithTokensToBurn(
-      inputBox: util.List[InputBox],
-      outBox: List[OutBox],
-      tokensToBurn: List[ErgoToken],
-      fee: Double = 0.001
+      inputBox: Seq[InputBox],
+      outBox: Seq[OutBox],
+      tokensToBurn: Seq[ErgoToken],
+      fee: Long = minAmount
   ): UnsignedTransaction = {
     this.ctx
       .newTxBuilder()
-      .boxesToSpend(inputBox)
-      .outputs(outBox.toArray: _*)
-      .tokensToBurn(tokensToBurn.toArray: _*)
-      .fee(this.getAmount(fee))
-      .sendChangeTo(this.senderAddress.asP2PK())
-      .build()
-  }
-
-  private def buildUnsignedTransactionChained(
-      inputBox: util.List[InputBox],
-      senderAddress: Address,
-      amountList: List[Double],
-      outBox: List[OutBox],
-      tokens: Boolean = false,
-      fee: Double = 0.001
-  ): UnsignedTransaction = {
-    val tb = this.ctx.newTxBuilder()
-    val inputBox1: InputBox = inputBox.get(0)
-    val erg: Long = abs(
-      inputBox1.getValue - (Parameters.OneErg * (amountList.sum + 0.001)).toLong
-    )
-    val tList = new ListBuffer[ErgoToken]()
-    var box: OutBox = null
-    val tokenFromInput: Seq[ErgoToken] = JavaConverters
-      .collectionAsScalaIterableConverter(inputBox1.getTokens)
-      .asScala
-      .toSeq
-    if (tokens) {
-      for (token <- tokenFromInput) {
-        tList.append(token: ErgoToken)
-      }
-      box = tb
-        .outBoxBuilder()
-        .value(erg)
-        .tokens(tList.toArray: _*)
-        .contract(
-          new ErgoTreeContract(
-            senderAddress.getErgoAddress.script,
-            this.ctx.getNetworkType
-          )
-        )
-        .build()
-    } else {
-      box = tb
-        .outBoxBuilder()
-        .value(erg)
-        .contract(
-          new ErgoTreeContract(
-            senderAddress.getErgoAddress.script,
-            this.ctx.getNetworkType
-          )
-        )
-        .build()
-
-    }
-    val finalOut = box :: outBox
-    tb.boxesToSpend(inputBox)
-      .outputs(finalOut.toArray: _*)
-      .fee(this.getAmount(fee))
-      .sendChangeTo(senderAddress.asP2PK())
+      .addInputs(inputBox: _*)
+      .addOutputs(outBox: _*)
+      .tokensToBurn(tokensToBurn: _*)
+      .fee(fee)
+      .sendChangeTo(this.senderAddress)
       .build()
   }
 
@@ -173,103 +111,33 @@ class TransactionHelper(
     this.ctx.sendTransaction(signedTransaction)
   }
 
-  private def getAmount(amount: Double): Long = {
-    (amount * Parameters.OneErg).toLong
-  }
-  def sendToken(
-      receiver: List[Address],
-      amountList: List[Double],
-      tokens: List[List[String]],
-      amountTokens: List[List[Long]] = null,
-      inputBox: util.List[InputBox] = null,
-      sender: Address = this.senderAddress,
-      isChained: Boolean = false
-  ): SignedTransaction = {
-    var inBox: util.List[InputBox] = null;
-    if (inputBox == null) {
-      inBox =
-        new InputBoxes(ctx).getInputs(amountList, sender, tokens, amountTokens)
-    } else {
-      inBox = inputBox
-    }
-    var unsignedTransaction: UnsignedTransaction = null
-    val outBox = new OutBoxes(this.ctx)
-      .tokenSendOutBox(receiver, amountList, tokens, amountTokens)
-    if (isChained) {
-      unsignedTransaction = this.buildUnsignedTransactionChained(
-        inBox,
-        sender,
-        amountList,
-        outBox,
-        tokens = true
-      )
-    } else {
-      unsignedTransaction = this.buildUnsignedTransaction(inBox, outBox)
-    }
-    this.signTransaction(unsignedTransaction)
-  }
-
-  def simpleSend(
-      receiver: List[Address],
-      amountList: List[Double],
-      inputBox: util.List[InputBox] = null,
-      sender: Address = this.senderAddress,
-      isChained: Boolean = false
-  ): SignedTransaction = {
-    var inBox: util.List[InputBox] = null;
-    if (inputBox == null) {
-      inBox = new InputBoxes(ctx).getInputs(amountList, sender)
-    } else {
-      inBox = inputBox
-    }
-    var unsignedTransaction: UnsignedTransaction = null
-    val outBox =
-      new OutBoxes(this.ctx).simpleOutBox(receiver.head, amountList.head)
-    if (isChained) {
-      unsignedTransaction = this.buildUnsignedTransactionChained(
-        inBox,
-        sender,
-        amountList,
-        List(outBox),
-        tokens = true
-      )
-    } else {
-      unsignedTransaction = this.buildUnsignedTransaction(inBox, List(outBox))
-    }
-    this.signTransaction(unsignedTransaction)
-  }
-
   def createToken(
       receiver: Address,
-      amountList: List[Double],
-      inputBox: util.List[InputBox] = null,
+      amountList: Seq[Long],
+      inputBox: Option[Seq[InputBox]] = None,
       sender: Address = this.senderAddress,
-      isChained: Boolean = false,
       isCollection: Boolean = false,
       name: String,
       description: String,
       tokenAmount: Long,
       tokenDecimals: Int
   ): SignedTransaction = {
-    var inBox: util.List[InputBox] = null;
-    if (inputBox == null) {
-      inBox = new InputBoxes(ctx).getInputs(amountList, sender)
-    } else {
-      inBox = inputBox
-    }
-    var unsignedTransaction: UnsignedTransaction = null
-    val outBoxObj = new OutBoxes(this.ctx)
-    var token = outBoxObj.tokenHelper(
-      inBox.get(0),
-      name,
-      description,
-      tokenAmount,
-      tokenDecimals
+    val inBox: Seq[InputBox] = inputBox.getOrElse(
+      new InputBoxes(ctx).getInputs(amountList, sender)
     )
+    val outBoxObj = new OutBoxes(this.ctx)
 
-    if (isCollection) {
-      token = outBoxObj.collectionTokenHelper(
-        inBox.get(0),
+    val token = if (isCollection) {
+      outBoxObj.collectionTokenHelper(
+        inBox.head,
+        name,
+        description,
+        tokenAmount,
+        tokenDecimals
+      )
+    } else {
+      outBoxObj.tokenHelper(
+        inBox.head,
         name,
         description,
         tokenAmount,
@@ -279,18 +147,8 @@ class TransactionHelper(
 
     val outBox =
       outBoxObj.tokenOutBox(token, receiver, amount = amountList.head)
-
-    if (isChained) {
-      unsignedTransaction = this.buildUnsignedTransactionChained(
-        inBox,
-        sender,
-        amountList,
-        List(outBox),
-        tokens = true
-      )
-    } else {
-      unsignedTransaction = this.buildUnsignedTransaction(inBox, List(outBox))
-    }
+    val unsignedTransaction =
+      this.buildUnsignedTransaction(inBox, Seq(outBox))
 
     this.signTransaction(unsignedTransaction)
   }
