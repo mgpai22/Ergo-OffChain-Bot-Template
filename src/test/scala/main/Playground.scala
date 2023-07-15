@@ -2,7 +2,7 @@ package main
 
 import contracts.YourProjectContracts
 
-object init extends App {
+object Playground extends App {
   println("Hello World!")
 }
 
