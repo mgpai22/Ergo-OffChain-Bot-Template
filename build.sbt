@@ -28,7 +28,7 @@ resolvers ++= Seq(
   "snapshots"
 )
 
-val AkkaVersion = "2.7.0"
+val AkkaVersion = "2.8.0"
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-testkit" % AkkaVersion % Test,
   "com.typesafe.akka" %% "akka-slf4j" % AkkaVersion % Test,
@@ -39,16 +39,18 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.ergoplatform" %% "ergo-appkit" % "5.0.0",
-  "io.github.getblok-io" % "getblok_plasma_2.12" % "1.0.1",
+  "org.ergoplatform" %% "ergo-appkit" % "5.0.1",
+  "io.github.k-singh" %% "plasma-toolkit" % "1.0.2",
   "io.github.ergo-lend" % "edge_2.12" % "0.1-SNAPSHOT",
-  "com.google.code.gson" % "gson" % "2.10"
+  "com.google.code.gson" % "gson" % "2.10.1",
+  "org.scalatest" %% "scalatest" % "3.2.15" % Test,
+  "com.squareup.okhttp3" % "mockwebserver" % "4.10.0" % Test
 )
 
 libraryDependencies += "com.lihaoyi" %% "requests" % "0.6.9"
 
 libraryDependencies ++= Seq(
-  "com.beachape" %% "enumeratum" % "1.7.0"
+  "com.beachape" %% "enumeratum" % "1.7.2"
 )
 libraryDependencies += "org.apache.httpcomponents" % "httpclient" % "4.5.14"
 
