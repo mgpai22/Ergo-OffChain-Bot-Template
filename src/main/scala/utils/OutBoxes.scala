@@ -1,13 +1,9 @@
 package utils
 
-import io.getblok.getblok_plasma.collections.{LocalPlasmaMap, PlasmaMap}
-import json.Register.Register
-import org.ergoplatform.{ErgoBox, appkit}
-import org.ergoplatform.appkit.JavaHelpers.JLongRType
 import org.ergoplatform.appkit.impl.{Eip4TokenBuilder, ErgoTreeContract}
 import org.ergoplatform.appkit._
-import org.ergoplatform.appkit.scalaapi.ErgoValueBuilder
-import special.collection.Coll
+import org.ergoplatform.sdk.ErgoToken
+import work.lithos.plasma.collections.LocalPlasmaMap
 
 import java.nio.charset.StandardCharsets
 import java.util
@@ -15,11 +11,8 @@ import scala.collection.mutable.ListBuffer
 
 class OutBoxes(ctx: BlockchainContext) {
 
-  private def getAmount(amount: Double): Long = {
-    (amount * Parameters.OneErg).toLong
-  }
+  private val minAmount = 1000000L
   private val txBuilder = this.ctx.newTxBuilder()
-  private val minAmount = this.getAmount(0.001)
 
   def pictureNFTHelper(
       inputBox: InputBox,
@@ -79,11 +72,11 @@ class OutBoxes(ctx: BlockchainContext) {
   def NFToutBox(
       nft: Eip4Token,
       receiver: Address,
-      amount: Double = 0.001
+      amount: Long = minAmount
   ): OutBox = {
     this.txBuilder
       .outBoxBuilder()
-      .value(getAmount(amount))
+      .value(amount)
       .mintToken(nft)
       .contract(
         new ErgoTreeContract(
@@ -97,11 +90,11 @@ class OutBoxes(ctx: BlockchainContext) {
   def tokenOutBox(
       token: Eip4Token,
       receiver: Address,
-      amount: Double = 0.001
+      amount: Long = minAmount
   ): OutBox = {
     this.txBuilder
       .outBoxBuilder()
-      .value(getAmount(amount))
+      .value(amount)
       .mintToken(token)
       .contract(
         new ErgoTreeContract(
@@ -114,7 +107,7 @@ class OutBoxes(ctx: BlockchainContext) {
 
   def tokenSendOutBox(
       receiver: List[Address],
-      amountList: List[Double],
+      amountList: List[Long],
       tokens: List[List[String]],
       amountTokens: List[List[Long]] = null
   ): List[OutBox] = {
@@ -147,8 +140,8 @@ class OutBoxes(ctx: BlockchainContext) {
       }
     }
     for (address: Address <- receiver) {
-      var erg = getAmount(amountList.apply(amountCounter))
-      var box = this.ctx
+      val erg: Long = amountList.apply(amountCounter)
+      val box = this.ctx
         .newTxBuilder()
         .outBoxBuilder()
         .value(erg)
@@ -169,11 +162,11 @@ class OutBoxes(ctx: BlockchainContext) {
   def buyerNFTOutBox(
       nft: Eip4Token,
       receiver: Address,
-      amount: Double = 0.001
+      amount: Long = minAmount
   ): OutBox = {
     this.txBuilder
       .outBoxBuilder()
-      .value(getAmount(amount))
+      .value(amount)
       .mintToken(nft)
       .contract(
         new ErgoTreeContract(
@@ -186,11 +179,11 @@ class OutBoxes(ctx: BlockchainContext) {
 
   def payoutBox(
       receiver: Address,
-      amount: Double = 0.001
+      amount: Long = minAmount
   ): OutBox = {
     this.txBuilder
       .outBoxBuilder()
-      .value(getAmount(amount))
+      .value(amount)
       .contract(
         new ErgoTreeContract(
           receiver.getErgoAddress.script,
@@ -204,11 +197,11 @@ class OutBoxes(ctx: BlockchainContext) {
       contract: ErgoContract,
       metaDataMap: LocalPlasmaMap[K, V],
       index: Long,
-      amount: Double = 0.001
+      amount: Long = minAmount
   ): OutBox = {
     this.txBuilder
       .outBoxBuilder()
-      .value(getAmount(amount))
+      .value(amount)
       .registers(
         metaDataMap.ergoValue,
         ErgoValue.of(index)
@@ -220,11 +213,11 @@ class OutBoxes(ctx: BlockchainContext) {
   def AVLDebugBoxSpending(
       senderAddress: Address,
       description: String,
-      amount: Double = 0.001
+      amount: Long = minAmount
   ): OutBox = {
     this.txBuilder
       .outBoxBuilder()
-      .value(getAmount(amount))
+      .value(amount)
       .registers(ErgoValue.of(description.getBytes(StandardCharsets.UTF_8)))
       .contract(
         new ErgoTreeContract(
@@ -237,22 +230,22 @@ class OutBoxes(ctx: BlockchainContext) {
 
   def genericContractBox(
       contract: ErgoContract,
-      amount: Double = 0.001
+      amount: Long = minAmount
   ): OutBox = {
     this.txBuilder
       .outBoxBuilder()
-      .value(getAmount(amount))
+      .value(amount)
       .contract(contract)
       .build()
   }
 
   def simpleOutBox(
       senderAddress: Address,
-      amount: Double
+      amount: Long = minAmount
   ): OutBox = {
     this.txBuilder
       .outBoxBuilder()
-      .value(getAmount(amount))
+      .value(amount)
       .contract(
         new ErgoTreeContract(
           senderAddress.getErgoAddress.script,
