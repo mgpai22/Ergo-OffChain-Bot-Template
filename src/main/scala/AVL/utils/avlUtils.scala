@@ -1,16 +1,13 @@
 package AVL.utils
 
 import configs.{AVLJsonHelper, AvlJson}
-
-import io.getblok.getblok_plasma.collections.{PlasmaMap}
-
-import scala.collection.mutable
+import work.lithos.plasma.collections.PlasmaMap
 
 object avlUtils {
 
   def exportAVL[K, V](map: PlasmaMap[K, V]): AVLJsonHelper = {
 
-    val manifest: io.getblok.getblok_plasma.collections.Manifest =
+    val manifest: work.lithos.plasma.collections.Manifest =
       map.getManifest(255)
 
     val manifestHex: String = manifest.toHexStrings._1
@@ -32,8 +29,8 @@ object avlUtils {
       map: PlasmaMap[K, V]
   ): Unit = {
 
-    val manifest: io.getblok.getblok_plasma.collections.Manifest =
-      io.getblok.getblok_plasma.collections.Manifest.fromHexStrings(
+    val manifest: work.lithos.plasma.collections.Manifest =
+      work.lithos.plasma.collections.Manifest.fromHexStrings(
         jsonData.digestHex,
         jsonData.manifestHex,
         jsonData.subTreeHex.toSeq
