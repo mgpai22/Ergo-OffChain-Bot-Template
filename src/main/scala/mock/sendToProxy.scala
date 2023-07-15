@@ -1,7 +1,7 @@
 package mock
 
-import org.ergoplatform.appkit.{Address, BlockchainContext, ErgoToken, OutBox}
-import utils.{InputBoxes, OutBoxes, TransactionHelper}
+import org.ergoplatform.appkit.{BlockchainContext, OutBox}
+import utils.{InputBoxes, TransactionHelper}
 
 class sendToProxy(
     ctx: BlockchainContext,
@@ -12,7 +12,7 @@ class sendToProxy(
   private val txHelper =
     new TransactionHelper(ctx, walletMnemonic, walletMnemonicPw)
   private val input =
-    new InputBoxes(ctx).getInputs(List(0.0013), txHelper.senderAddress)
+    new InputBoxes(ctx).getInputs(Seq(1300000L), txHelper.senderAddress)
   private val outBox = null.asInstanceOf[OutBox]
   private val unsignedTx =
     txHelper.buildUnsignedTransaction(input, List(outBox))
