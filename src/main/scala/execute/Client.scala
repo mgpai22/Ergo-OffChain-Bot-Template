@@ -3,11 +3,10 @@ import configs.serviceOwnerConf
 import node.BaseClient
 import utils.network
 
-class Client()
-    extends BaseClient(
+class Client(
+    nodeUrl: String = serviceOwnerConf.read("serviceOwner.json").nodeUrl
+) extends BaseClient(
       nodeInfo = execute.DefaultNodeInfo(
-        new network(
-          serviceOwnerConf.read("serviceOwner.json").nodeUrl
-        ).getNetworkType
+        new network(nodeUrl).getNetworkType
       )
     ) {}
