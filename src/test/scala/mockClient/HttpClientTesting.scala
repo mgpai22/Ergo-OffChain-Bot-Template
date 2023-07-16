@@ -16,14 +16,14 @@ trait HttpClientTesting {
 
   def loadNodeResponse(name: String): JString = {
     FileUtils.readFileToString(
-      new File(s"$responsesDir/node_responses/$name"),
+      new File(s"$responsesDir/mockwebserver/node_responses/$name"),
       Charset.defaultCharset()
     )
   }
 
   def loadExplorerResponse(name: String): JString = {
     FileUtils.readFileToString(
-      new File(s"$responsesDir/explorer_responses/$name"),
+      new File(s"$responsesDir/mockwebserver/explorer_responses/$name"),
       Charset.defaultCharset()
     )
   }
