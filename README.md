@@ -11,7 +11,7 @@ This is a template that can be cloned to implement your off-chain ergo transacti
 - Apache Http
 - Gson Json Serialization
 - scalatest v3.2.15
-- mockwebserver v4.10.0
+- mockwebserver v3.12.0
 
 # Usage
 - Add contracts in src/main/scala/resources
