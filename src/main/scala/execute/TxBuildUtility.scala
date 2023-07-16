@@ -10,9 +10,7 @@ class TxBuildUtility(
     txOperatorMnemonic: String,
     txOperatorMnemonicPw: String
 ) {
-  private val api = new explorerApi(
-    DefaultNodeInfo(ctx.getNetworkType).explorerUrl
-  )
+
   private val outBoxObj = new OutBoxes(ctx)
   private val txHelper = new TransactionHelper(
     ctx = ctx,
