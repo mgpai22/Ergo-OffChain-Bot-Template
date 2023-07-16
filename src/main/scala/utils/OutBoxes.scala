@@ -6,8 +6,6 @@ import org.ergoplatform.sdk.ErgoToken
 import work.lithos.plasma.collections.LocalPlasmaMap
 
 import java.nio.charset.StandardCharsets
-import java.util
-import scala.collection.mutable.ListBuffer
 
 class OutBoxes(ctx: BlockchainContext) {
 
@@ -87,7 +85,7 @@ class OutBoxes(ctx: BlockchainContext) {
       .build()
   }
 
-  def tokenOutBox(
+  def tokenMintOutBox(
       token: Eip4Token,
       receiver: Address,
       amount: Long = minAmount
@@ -105,69 +103,15 @@ class OutBoxes(ctx: BlockchainContext) {
       .build()
   }
 
-  def tokenSendOutBox(
-      receiver: List[Address],
-      amountList: List[Long],
-      tokens: List[List[String]],
-      amountTokens: List[List[Long]] = null
-  ): List[OutBox] = {
-    val outbx = new ListBuffer[OutBox]()
-    var amountCounter = 0
-    var tokenList1 = new ListBuffer[ListBuffer[ErgoToken]]()
-    var tokenList2 = new util.ArrayList[ErgoToken]()
-    var tokenAmountCounter = 0
-    val tokenList = new ListBuffer[ErgoToken]()
-    var tList = new ListBuffer[ErgoToken]()
-    if (amountTokens == null) {
-      for (token <- tokens) {
-        for (x <- token) {
-          val t: ErgoToken = new ErgoToken(x, 1)
-          tokenList.append(t)
-        }
-      }
-    } else {
-      for (token <- tokens) {
-        var tokenAmountCounterLocal = 0
-        var tokenAmountList = amountTokens.apply(tokenAmountCounter)
-        for (x <- token) {
-          var tokenAmm = tokenAmountList.apply(tokenAmountCounterLocal)
-          tList.append(new ErgoToken(x, tokenAmm))
-          tokenAmountCounterLocal = tokenAmountCounterLocal + 1
-        }
-        tokenAmountCounter = tokenAmountCounter + 1
-        tokenList1.append(tList)
-        tList = new ListBuffer[ErgoToken]()
-      }
-    }
-    for (address: Address <- receiver) {
-      val erg: Long = amountList.apply(amountCounter)
-      val box = this.ctx
-        .newTxBuilder()
-        .outBoxBuilder()
-        .value(erg)
-        .tokens(tokenList1.apply(amountCounter).toArray: _*)
-        .contract(
-          new ErgoTreeContract(
-            address.getErgoAddress.script,
-            this.ctx.getNetworkType
-          )
-        )
-        .build()
-      outbx.append(box)
-      amountCounter += 1
-    }
-    outbx.toList
-  }
-
-  def buyerNFTOutBox(
-      nft: Eip4Token,
+  def tokenOutBox(
+      token: Seq[ErgoToken],
       receiver: Address,
       amount: Long = minAmount
   ): OutBox = {
     this.txBuilder
       .outBoxBuilder()
       .value(amount)
-      .mintToken(nft)
+      .tokens(token: _*)
       .contract(
         new ErgoTreeContract(
           receiver.getErgoAddress.script,
@@ -175,6 +119,27 @@ class OutBoxes(ctx: BlockchainContext) {
         )
       )
       .build()
+  }
+
+  def optionalTokenOutBox(
+      token: Seq[ErgoToken],
+      receiver: Address,
+      amount: Long = minAmount
+  ): OutBox = {
+    val box = this.txBuilder
+      .outBoxBuilder()
+      .value(amount)
+      .contract(
+        new ErgoTreeContract(
+          receiver.getErgoAddress.script,
+          this.ctx.getNetworkType
+        )
+      )
+
+    if (token.nonEmpty) {
+      box.tokens(token: _*)
+    }
+    box.build()
   }
 
   def payoutBox(
