@@ -33,67 +33,23 @@ class TransactionHelper(
   private val minAmount = 1000000L
 
   def buildUnsignedTransaction(
-      inputBox: Seq[InputBox],
-      outBox: Seq[OutBox],
+      inputs: Seq[InputBox],
+      outputs: Seq[OutBox],
+      dataInputs: Seq[InputBox] = Seq.empty,
+      tokensToBurn: Seq[ErgoToken] = Seq.empty,
       fee: Long = minAmount
   ): UnsignedTransaction = {
-    this.ctx
+    val builder = this.ctx
       .newTxBuilder()
-      .addInputs(inputBox: _*)
-      .addOutputs(outBox: _*)
+      .addInputs(inputs: _*)
+      .addOutputs(outputs: _*)
       .fee(fee)
       .sendChangeTo(this.senderAddress)
-      .build()
-  }
 
-  def buildUnsignedTransactionWithDataInputs(
-      inputBox: Seq[InputBox],
-      outBox: Seq[OutBox],
-      dataInputs: Seq[InputBox],
-      fee: Long = minAmount
-  ): UnsignedTransaction = {
-    this.ctx
-      .newTxBuilder()
-      .addInputs(inputBox: _*)
-      .addOutputs(outBox: _*)
-      .addDataInputs(dataInputs: _*)
-      .fee(fee)
-      .sendChangeTo(this.senderAddress)
-      .build()
-  }
+    if (dataInputs.nonEmpty) builder.addDataInputs(dataInputs: _*)
+    if (tokensToBurn.nonEmpty) builder.tokensToBurn(tokensToBurn: _*)
 
-  def buildUnsignedTransactionWithDataInputsWithTokensToBurn(
-      inputBox: Seq[InputBox],
-      outBox: Seq[OutBox],
-      dataInputs: Seq[InputBox],
-      tokensToBurn: Seq[ErgoToken],
-      fee: Long = minAmount
-  ): UnsignedTransaction = {
-    this.ctx
-      .newTxBuilder()
-      .addInputs(inputBox: _*)
-      .addOutputs(outBox.toArray: _*)
-      .addDataInputs(dataInputs: _*)
-      .tokensToBurn(tokensToBurn: _*)
-      .fee(fee)
-      .sendChangeTo(this.senderAddress)
-      .build()
-  }
-
-  def buildUnsignedTransactionWithTokensToBurn(
-      inputBox: Seq[InputBox],
-      outBox: Seq[OutBox],
-      tokensToBurn: Seq[ErgoToken],
-      fee: Long = minAmount
-  ): UnsignedTransaction = {
-    this.ctx
-      .newTxBuilder()
-      .addInputs(inputBox: _*)
-      .addOutputs(outBox: _*)
-      .tokensToBurn(tokensToBurn: _*)
-      .fee(fee)
-      .sendChangeTo(this.senderAddress)
-      .build()
+    builder.build()
   }
 
   def signTransaction(
@@ -146,7 +102,7 @@ class TransactionHelper(
     }
 
     val outBox =
-      outBoxObj.tokenOutBox(token, receiver, amount = amountList.head)
+      outBoxObj.tokenMintOutBox(token, receiver, amount = amountList.head)
     val unsignedTransaction =
       this.buildUnsignedTransaction(inBox, Seq(outBox))
 
