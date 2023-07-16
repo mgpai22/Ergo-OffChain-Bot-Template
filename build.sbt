@@ -44,7 +44,8 @@ libraryDependencies ++= Seq(
   "io.github.ergo-lend" % "edge_2.12" % "0.1-SNAPSHOT",
   "com.google.code.gson" % "gson" % "2.10.1",
   "org.scalatest" %% "scalatest" % "3.2.15" % Test,
-  "com.squareup.okhttp3" % "mockwebserver" % "4.10.0" % Test
+  "org.scalacheck" %% "scalacheck" % "1.17.0" % Test,
+  "com.squareup.okhttp3" % "mockwebserver" % "3.12.0" % Test
 )
 
 libraryDependencies += "com.lihaoyi" %% "requests" % "0.6.9"
