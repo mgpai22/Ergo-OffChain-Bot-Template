@@ -21,6 +21,8 @@ class explorerApi(
     nodeUrl: String = serviceOwnerConf.read("serviceOwner.json").nodeUrl
 ) extends Explorer(
       nodeInfo = execute.DefaultNodeInfo(
+        nodeUrl,
+        apiUrl,
         new network(
           serviceOwnerConf.read("serviceOwner.json").nodeUrl
         ).getNetworkType

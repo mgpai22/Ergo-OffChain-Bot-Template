@@ -11,7 +11,6 @@ import org.ergoplatform.appkit.impl.InputBoxImpl
 import org.ergoplatform.appkit.{
   Address,
   BlockchainContext,
-  ErgoToken,
   ErgoValue,
   InputBox,
   SigmaProp,
@@ -19,8 +18,6 @@ import org.ergoplatform.appkit.{
 }
 import org.ergoplatform.explorer.client.model.OutputInfo
 import special.collection.Coll
-import io.getblok.getblok_plasma.PlasmaParameters
-import io.getblok.getblok_plasma.collections.PlasmaMap
 import sigmastate.AvlTreeFlags
 import utils.{
   BoxAPI,
@@ -47,9 +44,6 @@ class akkaFunctions {
   private lazy val serviceConf = serviceOwnerConf.read(serviceFilePath)
   private lazy val contractsConf = conf.read(contractConfFilePath)
 
-  private val exp = new explorerApi(
-    DefaultNodeInfo(ctx.getNetworkType).explorerUrl
-  )
   private val walletMnemonic = serviceConf.txOperatorMnemonic
   private val walletMnemonicPw = serviceConf.txOperatorMnemonicPw
   private val txHelper =
